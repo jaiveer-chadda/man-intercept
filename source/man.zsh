@@ -1,5 +1,9 @@
 #!/usr/bin/env zsh
 
+[[ "$ZSH_VERSION" == '5.9.1' ]] \
+  && export HELPDIR="/usr/share/zsh/5.9/help" \
+  || export HELPDIR="/usr/share/zsh/$ZSH_VERSION/help"
+
 source "${0:h}/list-all.zsh"
 
 # ——————————————————————————————————————————————————————————————————————————— #
@@ -8,10 +12,9 @@ function man help tldr () {
   setopt local_options warn_create_global
 
   local -ri 10 exit_code=$?
-  local -r run_help='run-help'
 
-  # if we were called by the run-help command, exit.
-  if (( $funcstack[(Ie)$run_help] )) return exit_code
+  # if we were called by the `run-help` command, exit.
+  if (( $funcstack[(Ie)run-help] )) return exit_code
 
   local -r error=$'\e[31m'"$0"$'\e[m:'
 
@@ -36,7 +39,7 @@ function man help tldr () {
 
 # ——————————————————————————————————————————————————————————————————————————— #
 
-man::main() {
+function man::main() {
   setopt local_options local_traps warn_create_global
 
   local -ra all_help_funcs=( # spell-checker:disable
@@ -67,6 +70,7 @@ man::main() {
   # if we background one of the functions, make sure that we don't
   #  keep trying to check if there's another option
   local -i 10 SIGTSTP=146
+  local -r PAGER=${=PAGER:-more}
 
   # —— Setup & Input Parsing —————————————————————————————————————————— #
 
@@ -81,13 +85,25 @@ man::main() {
     return 1
   }
 
-  local -r page="$1"
+  local page="$1"
   local -ri 2 do_run_help=$(( $all_help_funcs[(Ie)$page] ))
 
   # —— run-help ——————————————————————————————————————————————————————— #
 
   # if the inputted page is one of the pages that's covered by run-help, then
   #  use one of those
+  # if [[ -z "$section" ]] {
+  #
+  #   if [[ "$page" == '.' ]] page='dot'
+  #   if [[ "$page" == ':' ]] page='colon'
+  #
+  #   if [[ -r "$HELPDIR/$page" && "$page" != 'compctl' ]] {
+  #     less "$HELPDIR/$page"
+  #   }
+  # }
+  #
+  # if (( $? == 0 || $? == SIGTSTP )) return 0
+
   if (( do_run_help && ! section )) { run-help "$page"; return $?; }
   # we're doing it this way, bc run-help has a rly annoying feature where it
   #  runs `man` on failure, which messes w our whole plan
