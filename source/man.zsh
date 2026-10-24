@@ -1,8 +1,11 @@
 #!/usr/bin/env zsh
 
-[[ "$ZSH_VERSION" == '5.9.1' ]] \
-  && export HELPDIR="/usr/share/zsh/5.9/help" \
-  || export HELPDIR="/usr/share/zsh/$ZSH_VERSION/help"
+export HELPDIR="/usr/share/zsh/5.9/help"
+
+if [[ -d "${HELPDIR:a:h}" ]] {
+  print -ru2 "warning: path '${HELPDIR:a:h}' doesn't exist"
+  print -ru2 $'\t'" \$HELPDIR ($HELPDIR) is an invalid dir"
+}
 
 source "${0:h}/list-all.zsh"
 
@@ -76,7 +79,7 @@ function man::main() {
 
   local -l section
   # check if the first input is a valid section, and that there's another input
-  if [[ "$1" == [0-9n](|cc|g|m|p(m|cap)|ssl|t(cl|iff|k|ype)|x) && -n "$2" ]] {
+  if [[ "$1:l" == [0-9n](|cc|g|m|p(m|cap)|ssl|t(cl|iff|k|ype)|x) && -n "$2" ]] {
     section="$1"; shift
   }
 
