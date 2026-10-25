@@ -2,6 +2,13 @@
 
 # /opt/homebrew/Cellar/zsh/5.9/share/zsh/functions/run-help
 
+# ——————————————————————————————————————————————————————————————————————————— #
+
+# note: all comments beginning with uppercase letters are default comments,
+#       and comments beginning with lowercase letters are _my_ comments
+
+# ——————————————————————————————————————————————————————————————————————————— #
+
 #
 # Figure out where to get the best help, and get it.
 #
@@ -10,43 +17,64 @@
 #        unalias run-help
 #        autoload -Uz run-help
 #
-function -T _run-help () {
+function -T run_help_ () {
+
+  # —— Setup & Constants ——————————————————————————————————————————————————— #
+
   emulate -RL zsh
+  setopt local_options warn_create_global warn_nested_var
+
   local -r HELPDIR="${HELPDIR:-/opt/homebrew/Cellar/zsh/5.9/share/zsh/help}"
 
-  # ———————————————————————————————————————————————————————————————————————— #
+  # —— Set & Normalise Arg ————————————————————————————————————————————————— #
 
-  if [[ "$1" == '.' ]] 1='dot'
-  if [[ "$1" == ':' ]] 1='colon'
+  local cmd="$1"
 
-  # ———————————————————————————————————————————————————————————————————————— #
+  if [[ "$cmd" == '.' ]] cmd='dot'
+  if [[ "$cmd" == ':' ]] cmd='colon'
+
+  # —— Check $HELPDIR / List Files ————————————————————————————————————————— #
 
   # Check whether Util/helpfiles has been used to generate zsh help
-  if [[ $# -eq 0 || "$1" == '-l' ]] {
-    if [[ -d "$HELPDIR" ]] {
-      echo $'Here is a list of topics for which special help is available:\n'
-      print -rc "$HELPDIR"/*(:t)
-    } else {
-      echo 'There is no list of special help topics available at this time.'
-    }
-    return 0
+  if [[ $# -eq 0 || "$cmd" == '-l' ]] {
 
-  } elif [[ -n "${HELPDIR:-}" && -r "$HELPDIR/$1" && "$1" != compctl ]] {
-    ${=PAGER:-more} "$HELPDIR/$1"
+    # check that `$HELPDIR` is a valid dir
+    if ! [[ -d "$HELPDIR" ]] {
+      echo 'There is no list of special help topics available at this time.'
+      echo -E "\$HELPDIR ('$HELPDIR') is an invalid dir"
+      return 1
+    }
+
+    # print a list of available commands
+    echo $'Here is a list of topics for which special help is available:\n'
+    print -rc "$HELPDIR"/*(:t)
+
+    return 0
+  }
+
+  # —— Normal Lookup ——————————————————————————————————————————————————————— #
+
+  if [[ -n "${HELPDIR:-}" && -r "$HELPDIR/$1" && "$cmd" != 'compctl' ]] {
+    ${=PAGER:-less} "$HELPDIR/$cmd"
     return $?
   }
 
   # ———————————————————————————————————————————————————————————————————————— #
+  # —— Not in $HELPDIR ————————————————————————————————————————————————————— #
 
   # No zsh help; use "whence" to figure out where else we might look
 
   local noalias
-  local -a places=( "${(@f)$( builtin whence -va "$1" )}" )
+  # find every instance of `$cmd`
+  local -a places=( "${(@f)$( whence -va "$cmd" )}" )
 
-  if [[ "$places" == *"not found"* && "$1" != "${(Q)1}" ]] {
+  # if we couldn't find `$cmd`, and the unquoted version of `$cmd` is different
+  #  then try unquoting it, and trying again
+  if [[ "$places" == *"not found"* && "$cmd" != "${(Q)cmd}" ]] {
     # Different when unquoted, so try stripping quotes.
-    places=( "${(@f)$( builtin whence -va "${(Q)1}" )}" )
+    places=( "${(@f)$( whence -va "${(Q)cmd}" )}" )
 
+    # if it worked this time, then set all arguments to their unquoted forms
     if (( $#places )) set -- "${(Q)@}"
 
     # Quotation is significant to aliases, so suppress lookup.
@@ -62,48 +90,49 @@ function -T _run-help () {
     while (( i++ < $#places )) {
 
       what="$places[i]"
-      if [[ -n "$noalias" && "$what" == *" is an alias "* ]] continue
+      if [[ -n "$noalias" && "$what" == *' is an alias '* ]] continue
 
-      builtin print -r "$what"
+      print -r "$what"
 
       case "$what" {
-        ( *( is an alias for (noglob|nocorrect))* )
+        ( *( is an alias for (noglob|nocorrect))* ) {
+
           if [[ "${what[(w)7]:t}" != "${what[(w)1]}" ]] {
             run_help_orig_cmd="${what[(w)1]}" run-help "${what[(w)7]:t}"
           }
-        ;;
+        } ;;
 
-        ( *( is an alias)* )
+        ( *( is an alias)* ) {
           if [[ "${what[(w)6]:t}" != "${what[(w)1]}" ]] {
             run_help_orig_cmd="${what[(w)1]}" run-help "${what[(w)6]:t}"
           }
-        ;;
+        } ;;
 
-        ( *( is a * function) )
-          case ${what[(w)1]} in
-          (comp*) man zshcompsys;;
-          (zf*) man zshftpsys;;
-          (run-help) man zshcontrib;;
-          (*) builtin functions ${what[(w)1]} | ${=PAGER:-more};;
-          esac
-        ;;
-
-        ( *( is a * builtin) )
-          case "${what[(w)1]}" {
-            ( compctl                                ) man zshcompctl ;;
-            ( comp*                                  ) man zshcompwid ;;
-            ( bindkey | vared | zle                  ) man zshzle     ;;
-            ( *setopt                                ) man zshoptions ;;
-            ( cap | getcap | setcap                  ) ;& # fallthrough
-            ( clone                                  ) ;& # fallthrough
-            ( ln | mkdir | mv | rm | rmdir | sync    ) ;& # fallthrough
-            ( sched                                  ) ;& # fallthrough
-            ( echotc | echoti | sched | stat         ) ;& # fallthrough
-            ( zprof | zpty | zsocket | zstyle | ztcp ) man zshmodules  ;;
-            ( zftp                                   ) man zshftpsys   ;;
-            ( *                                      ) man zshbuiltins ;;
+        ( *( is a * function) ) { #
+          case ${what[(w)1]} {
+            ( comp*    ) man zshcompsys ;;
+            ( zf*      ) man zshftpsys  ;;
+            ( run-help ) man zshcontrib ;;
+            ( *        ) functions ${what[(w)1]} | ${=PAGER:-less};;
           }
-        ;;
+        } ;;
+
+        ( *( is a * builtin) ) { #
+          case "${what[(w)1]}" {
+            ( compctl                          ) man zshcompctl ;;
+            ( comp*                            ) man zshcompwid ;;
+            ( vared | zle | bindkey            ) man zshzle     ;;
+            ( *setopt                          ) man zshoptions ;;
+            ( (set|get|)cap                    ) ;& # fallthrough
+            ( clone                            ) ;& # fallthrough
+            ( (mk|rm)dir | sync | mv | rm | ln ) ;& # fallthrough
+            ( sched                            ) ;& # fallthrough
+            ( echot[ci] | sched | stat         ) ;& # fallthrough
+            ( z(socket|style|prof|pty|tcp)     ) man zshmodules  ;;
+            ( zftp                             ) man zshftpsys   ;;
+            ( *                                ) man zshbuiltins ;;
+          }
+        } ;;
 
         ( *( is hashed to *)     ) man "${what[(w)-1]:t}" ;;
         ( *( is a reserved word) ) man zshmisc ;;
@@ -113,8 +142,8 @@ function -T _run-help () {
             if { whence "run-help-$1:t" >/dev/null; } {
               local cmd_args
 
-              builtin getln cmd_args
-              builtin print -z "$cmd_args"
+              getln cmd_args
+              print -z "$cmd_args"
 
               cmd_args=( ${(z)cmd_args} )
 
@@ -134,14 +163,15 @@ function -T _run-help () {
         ;;
       }
 
+      # ————————————————————————————————————————————————————————————————————— #
+
       if (( i < $#places && ! didman )) {
 
-        builtin print -nP '%SPress any key for more help or q to quit%s'
-        builtin read -k what
+        print -nP '%SPress any key for more help or q to quit%s'
+        read -k what
 
-        local -r newline=$'\n'
-        if [[ "$what" != "$newline" ]] echo
-        if [[ "$what" == [qQ]       ]] break
+        if [[ "$what" != $'\n' ]] echo
+        if [[ "$what" == [qQ]  ]] break
       }
 
     }
@@ -153,5 +183,5 @@ function -T _run-help () {
 
 # ——————————————————————————————————————————————————————————————————————————— #
 
-# spell:ignore noalias nocorrect echotc echoti sched vared getln
+# spell:ignore noalias nocorrect echot sched vared getln
 # spell:ignoreRegExp /\bz\w+\b/g
