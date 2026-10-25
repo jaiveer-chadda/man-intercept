@@ -7,33 +7,39 @@ if ! [[ -d "${HELPDIR:a:h}" ]] {
   print -ru2 $'\t'" \$HELPDIR ($HELPDIR) is an invalid dir"
 }
 
-source "${0:h}/list-all.zsh"
+source "${${(%):-%x}:a:h}/list-all.zsh"
 
 # ——————————————————————————————————————————————————————————————————————————— #
 
 function man help tldr () {
   setopt local_options warn_create_global
 
-  local -ri 10 exit_code=$?
+  # the name with which this function was called
+  #  (usually the same as `$0`, but this is just to make sure)
+  local -r funcname="${(%):-%N}"
 
-  # if we were called by the `run-help` command, exit.
-  if (( $funcstack[(Ie)run-help] )) return exit_code
+  # if we were called by `run-help`, then call `man` directly & quit
+  #  this prevents the recursion issue that's been bugging me for so long
+  if [[ "$funcname" == 'man' ]] && (( $funcstack[(Ie)run-help] )) {
+    command man "$@"
+    return $?
+  }
 
-  local -r error=$'\e[31m'"$0"$'\e[m:'
+  local -r error=$'\e[31m'"$funcname"$'\e[m:'
 
   # if the input is `man all`, or `help -l`, etc., then pass the
   #  job onto one of those dedicated functions
   if [[ "$1" == (-(-list|l)|all) ]] {
-    "$0::list_all"
+    "$funcname::list_all"
 
-  } elif [[ "$0" == 'tldr' ]] {
+  } elif [[ "$funcname" == 'tldr' ]] {
     # otherwise if the `$0` was `tldr`, then I assume that I actually meant
     #  `tldr`, so run that command as-is
     command tldr --color=always "$@"
 
   } else {
-    # finally, if the input wasn't `man/help all` and `$0` wasn't `tldr`
-    # pass it on to the main function, which handles both `man` and `help`
+    # finally, if the input wasn't `man/help all` and `$0` wasn't `tldr`,
+    #  pass it on to the main function, which handles both `man` and `help`
     man::main "$@"
   }
 
@@ -45,41 +51,16 @@ function man help tldr () {
 function man::main() {
   setopt local_options local_traps warn_create_global
 
-  local -ra all_help_funcs=( # spell-checker:disable
-    'alias'      'autoload'       'bg'            'bindkey'        'break'
-    'builtin'    'bye'            'cap'           'cd'             'chdir'
-    'clone'      'colon'          'command'       'comparguments'  'compcall'
-    'compctl'    'compdescribe'   'compfiles'     'compgroups'     'compquote'
-    'comptags'   'comptry'        'compvalues'    'continue'       'declare'
-    'dirs'       'disable'        'disown'        'dot'            'echo'
-    'echotc'     'echoti'         'emulate'       'enable'         'eval'
-    'exec'       'exit'           'export'        'false'          'fc'
-    'fg'         'float'          'functions'     'getcap'         'getln'
-    'getopts'    'hash'           'history'       'integer'        'jobs'
-    'kill'       'let'            'limit'         'local'          'logout'
-    'noglob'     'popd'           'print'         'printf'         'pushd'
-    'pushln'     'pwd'            'r'             'read'           'readonly'
-    'rehash'     'return'         'sched'         'set'            'setcap'
-    'setopt'     'shift'          'source'        'suspend'        'test'
-    'times'      'trap'           'true'          'ttyctl'         'type'
-    'typeset'    'ulimit'         'umask'         'unalias'        'unfunction'
-    'unhash'     'unlimit'        'unset'         'unsetopt'       'vared'
-    'wait'       'whence'         'where'         'which'          'zcompile'
-    'zformat'    'zftp'           'zle'           'zmodload'       'zparseopts'
-    'zprof'      'zpty'           'zregexparse'   'zsocket'        'zstyle'
-    'ztcp'        '.'
-  ) # spell-checker:enable
-
   # if we background one of the functions, make sure that we don't
   #  keep trying to check if there's another option
-  local -i 10 SIGTSTP=146
-  local -r PAGER=${=PAGER:-more}
+  local -ri 10 SIGTSTP=$(( 128 + signals[(i)TSTP] - 1 ))
+  local -r pager=${=PAGER:-less}
 
   # —— Setup & Input Parsing —————————————————————————————————————————— #
 
   local -l section
   # check if the first input is a valid section, and that there's another input
-  if [[ "$1:l" == [0-9n](|cc|g|m|p(m|cap)|ssl|t(cl|iff|k|ype)|x) && -n "$2" ]] {
+  if [[ "$1:l" == [0-9n](|cc|g|m|p(m|cap)|ssl|t(cl|iff|k|ype)|x) && "$2" ]] {
     section="$1"; shift
   }
 
@@ -89,27 +70,21 @@ function man::main() {
   }
 
   local page="$1"
-  local -ri 2 do_run_help=$(( $all_help_funcs[(Ie)$page] ))
 
   # —— run-help ——————————————————————————————————————————————————————— #
 
-  # if the inputted page is one of the pages that's covered by run-help, then
-  #  use one of those
-  # if [[ -z "$section" ]] {
-  #
-  #   if [[ "$page" == '.' ]] page='dot'
-  #   if [[ "$page" == ':' ]] page='colon'
-  #
-  #   if [[ -r "$HELPDIR/$page" && "$page" != 'compctl' ]] {
-  #     less "$HELPDIR/$page"
-  #   }
-  # }
-  #
-  # if (( $? == 0 || $? == SIGTSTP )) return 0
+  # if a section was specified, then it can't be `run-help`
+  if [[ -n "$HELPDIR" && -z "$section" ]] {
+    if   [[ "$page" == '.' ]] { page='dot'   } \
+    elif [[ "$page" == ':' ]] { page='colon' }
 
-  if (( do_run_help && ! section )) { run-help "$page"; return $?; }
-  # we're doing it this way, bc run-help has a rly annoying feature where it
-  #  runs `man` on failure, which messes w our whole plan
+    if [[ -r "$HELPDIR/$page" && "$page" != 'compctl' ]] {
+      ${=pager} "$HELPDIR/$page"
+      if (( $? == 0 || $? == SIGTSTP )) return 0
+    } else {
+      # go fish
+    }
+  }
 
   # —— man ———————————————————————————————————————————————————————————— #
 
@@ -136,3 +111,5 @@ function man::main() {
 }
 
 # ——————————————————————————————————————————————————————————————————————————— #
+
+# spell:ignore TSTP
