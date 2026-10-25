@@ -2,8 +2,8 @@
 
 export HELPDIR="/usr/share/zsh/5.9/help"
 
-if [[ -d "${HELPDIR:a:h}" ]] {
-  print -ru2 "warning: path '${HELPDIR:a:h}' doesn't exist"
+if ! [[ -d "${HELPDIR:a:h}" ]] {
+  print -ru2 "${${(%):-%x}:t}: warning: path '${HELPDIR:a:h}' doesn't exist"
   print -ru2 $'\t'" \$HELPDIR ($HELPDIR) is an invalid dir"
 }
 
