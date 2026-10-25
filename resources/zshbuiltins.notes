@@ -1,0 +1,154 @@
+
+
+(?<=^\\fB)
+(\\-|:|\\&.|\[|alias|autoload|b(g|indkey|reak|uiltin|ye)|c(d|hdir|o(ntinue|mmand|mp(add|arguments|call|ctl|describe|files|groups|quote|set|tags|try|values)))|declare|di(rs|sable|sown)|echo(t[ci])?|e(mulate|nable|val|x(ec|it|port))|f([cg]|alse|loat|unctions)|get(ln|opts)|hash|history|integer|jobs|kill|l(et|imit|ocal|ogout)|noglob|pcre_(compile|match|study)|p(ush(d|ln)|opd|wd|ri(ntf?|vate))|r(ead(only)?|ehash|eturn)?|s(et(opt)?|ched|hift|ource|trftime|uspend|ysread)|t(est|imes|rap|rue|tyctl|ype|ypeset)|u(limit|mask|n(alias|function|hash|limit|set(opt)?))|vared|wait|wh(ence|ere|ich)|z(compile|format|le|modload|parseopts|regexparse|stat|style|f_(chgrp|chmod|chown|ln|mkdir|mv|rm|rmdir|sync)))
+(?=\\fP)
+
+(?<=^\\fB)(\\-|:|\\&.|\[|alias|autoload|b(g|indkey|reak|uiltin|ye)|c(d|hdir|o(ntinue|mmand|mp(add|arguments|call|ctl|describe|files|groups|quote|set|tags|try|values)))|declare|di(rs|sable|sown)|echo(t[ci])?|e(mulate|nable|val|x(ec|it|port))|f([cg]|alse|loat|unctions)|get(ln|opts)|hash|history|integer|jobs|kill|l(et|imit|ocal|ogout)|noglob|pcre_(compile|match|study)|p(ush(d|ln)|opd|wd|ri(ntf?|vate))|r(ead(only)?|ehash|eturn)?|s(et(opt)?|ched|hift|ource|trftime|uspend|ysread)|t(est|imes|rap|rue|tyctl|ype|ypeset)|u(limit|mask|n(alias|function|hash|limit|set(opt)?))|vared|wait|wh(ence|ere|ich)|z(compile|format|le|modload|parseopts|regexparse|stat|style|f_(chgrp|chmod|chown|ln|mkdir|mv|rm|rmdir|sync)))(?=\\fP)
+
+
+\\-|:|\\&.|\[
+alias|autoload
+b(g|indkey|reak|uiltin|ye)
+c(d|hdir|o(ntinue|mmand|mp(add|arguments|call|ctl|describe|files|groups|quote|set|tags|try|values)))
+declare|di(rs|sable|sown)
+echo(t[ci])?
+e(mulate|nable|val|x(ec|it|port))
+f([cg]|alse|loat|unctions)
+get(ln|opts)
+hash|history
+integer
+jobs
+kill
+l(et|imit|ocal|ogout)
+noglob
+pcre_(compile|match|study)
+p(ush(d|ln)|opd|wd|ri(ntf?|vate))
+r(ead(only)?|ehash|eturn)?
+s(et(opt)?|ched|hift|ource|trftime|uspend|ysread)
+t(est|imes|rap|rue|tyctl|ype|ypeset)
+u(limit|mask|n(alias|function|hash|limit|set(opt)?))
+vared
+wait|wh(ence|ere|ich)
+z(compile|format|le|modload|parseopts|regexparse|stat|style|f_(chgrp|chmod|chown|ln|mkdir|mv|rm|rmdir|sync))
+
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
+
+\\-|:|\\&.|\[|alias|autoload|bg|bindkey|break|builtin|bye|cd|chdir|command|compadd|comparguments|compcall|compctl|compdescribe|compfiles|compgroups|compquote|compset|comptags|comptry|compvalues|continue|declare|dirs|disable|disown|echo|echotc|echoti|emulate|enable|eval|exec|exit|export|false|fc|fg|float|functions|getln|getopts|hash|history|integer|jobs|kill|let|limit|local|logout|noglob|pcre_compile|pcre_match|pcre_study|popd|print|printf|private|pushd|pushln|pwd|r|read|readonly|rehash|return|sched|set|setopt|shift|source|strftime|suspend|sysread|test|times|trap|true|ttyctl|type|typeset|ulimit|umask|unalias|unfunction|unhash|unlimit|unset|unsetopt|vared|wait|whence|where|which|zcompile|zf_chgrp|zf_chmod|zf_chown|zf_ln|zf_mkdir|zf_mv|zf_rm|zf_rmdir|zf_sync|zformat|zle|zmodload|zparseopts|zregexparse|zstat|zstyle
+#]
+
+114  cap
+
+1    alias
+2    autoload
+3    bg
+4    bindkey
+5    break
+6    builtin
+7    bye
+8    cd
+9    chdir
+10   command
+11   compadd
+12   comparguments
+13   compcall
+14   compctl
+15   compdescribe
+16   compfiles
+17   compgroups
+18   compquote
+19   compset
+20   comptags
+21   comptry
+22   compvalues
+23   continue
+24   declare
+25   dirs
+26   disable
+27   disown
+28   echo
+29   echotc
+30   echoti
+31   emulate
+32   enable
+33   eval
+34   exec
+35   exit
+36   export
+37   false
+38   fc
+39   fg
+40   float
+41   functions
+42   getln
+43   getopts
+44   hash
+45   history
+46   integer
+47   jobs
+48   kill
+49   let
+50   limit
+51   local
+52   logout
+53   noglob
+54   pcre_compile
+55   pcre_match
+56   pcre_study
+57   popd
+58   print
+59   printf
+60   private
+61   pushd
+62   pushln
+63   pwd
+64   r
+65   read
+66   readonly
+67   rehash
+68   return
+69   sched
+70   set
+71   setopt
+72   shift
+73   source
+74   strftime
+75   suspend
+76   sysread
+77   test
+78   times
+79   trap
+80   true
+81   ttyctl
+82   type
+83   typeset
+84   ulimit
+85   umask
+86   unalias
+87   unfunction
+88   unhash
+89   unlimit
+90   unset
+91   unsetopt
+92   vared
+93   wait
+94   whence
+95   where
+96   which
+97   zcompile
+98   zf_chgrp
+99   zf_chmod
+100  zf_chown
+101  zf_ln
+102  zf_mkdir
+103  zf_mv
+104  zf_rm
+105  zf_rmdir
+106  zf_sync
+107  zformat
+108  zle
+109  zmodload
+110  zparseopts
+111  zregexparse
+112  zstat
+113  zstyle
