@@ -1,4 +1,169 @@
 
+1   -
+2   .
+3   :
+4   alias
+5   autoload
+6   bindkey
+7   break
+8   builtin
+9   command
+10  comparguments
+
+11  compcall
+12  compctl
+13  compdescribe
+14  compfiles
+15  compgroups
+16  compquote
+17  comptags
+18  comptry
+19  compvalues
+20  continue
+
+21  declare
+22  disable
+23  echo
+24  emulate
+25  enable
+26  eval
+27  exec
+28  exit
+29  export
+30  false
+
+31  float
+32  getln
+33  getopts
+34  hash
+35  history
+36  integer
+37  let
+38  limit
+39  local
+40  logout
+
+41  noglob
+42  popd
+43  printf
+44  pushln
+45  pwd
+46  readonly
+47  return
+48  setopt
+49  shift
+50  source
+
+51  suspend
+52  [times]
+53  trap
+54  true
+55  ttyctl
+56  type
+57  ulimit
+58  umask
+59  unalias
+60  unfunction
+
+61  unhash
+62  unlimit
+63  unset
+64  unsetopt
+65  wait
+66  whence
+67  where
+68  which
+69  zformat
+70  zparseopts
+
+71  zregexparse
+72  zsocket
+
+
+1   -
+2   .
+3   :
+4   alias
+5   autoload
+6   bindkey
+7   break
+8   builtin
+9   command
+10  comparguments
+
+11  compcall
+12  compctl
+13  compdescribe
+14  compfiles
+15  compgroups
+16  compquote
+17  comptags
+18  comptry
+19  compvalues
+20  continue
+
+21  declare
+22  disable
+23  echo
+24  emulate
+25  enable
+26  eval
+27  exec
+28  exit
+29  export
+30  false
+
+31  float
+32  getln
+33  getopts
+34  hash
+35  history
+36  integer
+37  let
+38  limit
+39  local
+40  logout
+
+41  noglob
+42  popd
+43  printf
+44  pushln
+45  pwd
+46  readonly
+47  return
+48  setopt
+49  shift
+50  source
+
+51  suspend
+52  trap
+53  true
+54  ttyctl
+55  type
+56  ulimit
+57  umask
+58  unalias
+59  unfunction
+60  unhash
+
+61  unlimit
+62  unset
+63  unsetopt
+64  wait
+65  whence
+66  where
+67  which
+68  zformat
+69  zparseopts
+70  zregexparse
+
+71  zsocket
+
+
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
+
 
 (?<=^\\fB)
 (\\-|:|\\&.|\[|alias|autoload|b(g|indkey|reak|uiltin|ye)|c(d|hdir|o(ntinue|mmand|mp(add|arguments|call|ctl|describe|files|groups|quote|set|tags|try|values)))|declare|di(rs|sable|sown)|echo(t[ci])?|e(mulate|nable|val|x(ec|it|port))|f([cg]|alse|loat|unctions)|get(ln|opts)|hash|history|integer|jobs|kill|l(et|imit|ocal|ogout)|noglob|pcre_(compile|match|study)|p(ush(d|ln)|opd|wd|ri(ntf?|vate))|r(ead(only)?|ehash|eturn)?|s(et(opt)?|ched|hift|ource|trftime|uspend|ysread)|t(est|imes|rap|rue|tyctl|ype|ypeset)|u(limit|mask|n(alias|function|hash|limit|set(opt)?))|vared|wait|wh(ence|ere|ich)|z(compile|format|le|modload|parseopts|regexparse|stat|style|f_(chgrp|chmod|chown|ln|mkdir|mv|rm|rmdir|sync)))
@@ -152,3 +317,116 @@ z(compile|format|le|modload|parseopts|regexparse|stat|style|f_(chgrp|chmod|chown
 111  zregexparse
 112  zstat
 113  zstyle
+
+
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————— #
+
+1   -
+2   .
+3   :
+4   alias
+5   autoload
+6   bg
+7   bindkey
+8   break
+9   builtin
+10  bye
+11  cap
+12  cd
+13  chdir
+14  clone
+15  command
+16  compvalues
+17  comptry
+18  comptags
+19  compquote
+20  compgroups
+21  compfiles
+22  compdescribe
+23  compctl
+24  compcall
+25  comparguments
+26  continue
+27  declare
+28  dirs
+29  disable
+30  disown
+31  echo
+32  echotc
+33  echoti
+34  emulate
+35  enable
+36  eval
+37  exec
+38  exit
+39  export
+40  false
+41  fc
+42  fg
+43  float
+44  functions
+45  getcap
+46  getln
+47  getopts
+48  hash
+49  history
+50  integer
+51  jobs
+52  kill
+53  let
+54  limit
+55  local
+56  logout
+57  noglob
+58  popd
+59  print
+60  printf
+61  pushd
+62  pushln
+63  pwd
+64  r
+65  read
+66  readonly
+67  rehash
+68  return
+69  sched
+70  set
+71  setcap
+72  setopt
+73  shift
+74  source
+75  stat
+76  suspend
+77  test
+78  times
+79  trap
+80  true
+81  ttyctl
+82  type
+83  typeset
+84  ulimit
+85  umask
+86  unalias
+87  unfunction
+88  unhash
+89  unlimit
+90  unset
+91  unsetopt
+92  vared
+93  wait
+94  whence
+95  where
+96  which
+97  zcompile
+98  zformat
+99  zftp
+100 zle
+101 zmodload
+102 zparseopts
+103 zprof
+104 zpty
+105 zregexparse
+106 zsocket
+107 zstyle
+108 ztcp
