@@ -1,5 +1,42 @@
 #!/usr/bin/env zsh
 
+# TODO: handle the cases:
+#   - "Same as ..."           e.g. chdir
+#   - "Eqivalent to ..."      e.g. which
+#   - "See the section ..."   e.g. zprof
+
+# ——————————————————————————————————————————————————————————————————————————— #
+# ——————————————————————————————————————————————————————————————————————————— #
+
+function run-help-formatted () {
+
+  setopt local_options warn_create_global
+
+  # ———————————————————————————————————————————————————————————————————————— #
+
+  local -rh cmd="${1:?Must enter a command name}"
+
+  # ———————————————————————————————————————————————————————————————————————— #
+
+  # these definitions will be exposed to `compile-run-help`
+  local -r output_dir="${XDG_STATE_HOME:-${HOME?}/.local/state}/run-man-help"
+  local -r output_file="$output_dir/zshbuiltins-parsed"
+
+  if ! { compile-run-help       \
+    && [[ -r  "$output_file" ]] \
+    && source "$output_file"    \
+    && [[ -v    mapping      ]] \
+  } return 2
+
+  # ———————————————————————————————————————————————————————————————————————— #
+
+  local -r output="$mapping[$cmd]"
+  if [[ -z "$output" ]] return 1
+
+  less <<< "$output"
+}
+
+# ——————————————————————————————————————————————————————————————————————————— #
 # ——————————————————————————————————————————————————————————————————————————— #
 
 function compile-run-help () {
@@ -7,6 +44,8 @@ function compile-run-help () {
   setopt local_options warn_create_global extended_glob
 
   local -r NL=$'\n'
+  # how much the name and description are indented by
+  local -ri 10 name_pad=5 desc_pad=12
 
   # if we're directly executing this file, rather than running the function,
   #  then it should be considered to be in debug mode
@@ -15,11 +54,15 @@ function compile-run-help () {
 
   # ———————————————————————————————————————————————————————————————————————— #
 
-  local -r output_dir="${XDG_STATE_HOME:-${HOME?}/.local/state}/run-man-help"
-  local -r output_file="$output_dir/zshbuiltins-parsed"
+  # if `output_dir` or `output_file` haven't been set in some outer scope
+  #  (usually by the calling function), then we should set them ourselves
+  if [[ ! ( -v output_dir && -v output_file ) ]] {
+    local -r output_dir="${XDG_STATE_HOME:-${HOME?}/.local/state}/run-man-help"
+    local -r output_file="$output_dir/zshbuiltins-parsed"
+  }
 
   local -ri 10 col_adj=${1:--2}
-  local -ri 10 width=$(( COLUMNS + col_adj ))
+  local -ri 10 width=$(( COLUMNS + col_adj + name_pad ))
 
   # ———————————————————————————————————————————————————————————————————————— #
 
@@ -30,9 +73,6 @@ function compile-run-help () {
   ]] return 0  # then the file is already compiled - there's nothing to be done
 
   # ———————————————————————————————————————————————————————————————————————— #
-
-  # how much the name and description are indented by
-  local -ri 10 name_pad=5 desc_pad=12
 
   # LESS_COLUMNS
   local -r page="${"$(
@@ -120,9 +160,9 @@ function compile-run-help () {
       ]] {
         # success!
         name="${${lines[tail]/# ##}%% *}"
-        desc="${lines[tail]/# ##$name ##}"
+        desc="${lines[tail]/# ##$name ##/$name$NL${(r:desc_pad - name_pad:)}}"
 
-        mapping[$name]="$desc"
+        local mapping[${name//?$'\b'}]="$desc"
         continue
       }
 
@@ -153,10 +193,10 @@ function compile-run-help () {
 
     # —————————————————————————————————————————————— #
 
-    name="${${${lines[i+1]/# ##}%% *}//?$'\b'}"
-    desc="${(F)lines[i+1,tail]//%$'\n'}"
+    name="${${lines[i+1]/# ##}%% *}"
+    desc="${(F)${(@)lines[i+1,tail]//# (#c$name_pad)}%$'\n'}"
 
-    mapping[$name]="$desc"
+    local mapping[${name//?$'\b'}]="$desc"
 
     # —————————————————————————————————————————————— #
 
@@ -169,7 +209,7 @@ function compile-run-help () {
 
   # stringify the `$mapping` assoc
   #  and replace the long `\C-H` escape sequence with the shorter `\b`
-  local -r output="${"$( typeset -Ap0 mapping )"//\\C-H/\b}"
+  local -r output="${"$( typeset -Ap 1 mapping )"//\\C-H/\b}"
 
   mkdir -p "$output_dir"
 
@@ -178,9 +218,19 @@ function compile-run-help () {
   >| "$output_file" <<< "#$width$NL$output"
 
   # print out the output file if we're debugging
-  # if (( debug )) echo -E - "$(< "$output_file" )"
+  if (( debug )) {
+    local -r BS=$'\b'
+    echo -E - "${${$(< "$output_file" )//$'\\b'/$BS}//$'\\n'/$NL}"
+  }
+
+  return 0
 }
 
 # ——————————————————————————————————————————————————————————————————————————— #
+# ——————————————————————————————————————————————————————————————————————————— #
 
-if [[ "$ZSH_EVAL_CONTEXT" == 'toplevel' ]] compile-run-help
+if [[ "$ZSH_EVAL_CONTEXT" == 'toplevel' ]] {
+  if [[ "$1" == -c ]] { shift; compile-run-help "$@"; return $?; }
+  if [[ "$1" == -f ]] shift
+  run-help-formatted "$@"
+}
